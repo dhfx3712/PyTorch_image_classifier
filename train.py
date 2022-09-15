@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
 
 import os
-import apex
+# import apex
 import time
 import random
 import argparse
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from apex import amp
+# from apex import amp
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 import torch
@@ -61,9 +61,9 @@ def train_epoch(model, loader, optimizer):
 
         if not config["use_amp"]:
             loss.backward()
-        else:
-            with amp.scale_loss(loss, optimizer) as scaled_loss:
-                scaled_loss.backward()
+        # else:
+        #     with amp.scale_loss(loss, optimizer) as scaled_loss:
+        #         scaled_loss.backward()
 
         if int(config["image_size"]) in [896,576]:
             torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
@@ -130,8 +130,8 @@ def run(fold, df, transforms_train, transforms_val, mel_idx):
         pretrained = config["pretrained"],
         metric_strategy = config["metric_strategy"]
     )
-    if DP:
-        model = apex.parallel.convert_syncbn_model(model)
+    # if DP:
+    #     model = apex.parallel.convert_syncbn_model(model)
     model = model.to(device)
 
     auc_max = 0.  
@@ -139,8 +139,8 @@ def run(fold, df, transforms_train, transforms_val, mel_idx):
     model_file3 = os.path.join(config["model_dir"], f'final_fold{fold}.pth')
 
     optimizer = optim.Adam(model.parameters(), lr=float(config["init_lr"]))
-    if config["use_amp"]: 
-        model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
+    # if config["use_amp"]:
+    #     model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
     if DP:
         model = nn.DataParallel(model)
     #scheduler_cosine = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, int(config["n_epochs"]) - 1) 
@@ -174,16 +174,17 @@ def run(fold, df, transforms_train, transforms_val, mel_idx):
 def main():
 
     df, df_test, mel_idx = get_df( config["data_dir"], config["auc_index"]  )
+    print (df,'\n',df_test,'\n',mel_idx)
 
     transforms_train, transforms_val = get_transforms(config["image_size"])  
 
-    folds = [int(i) for i in config["fold"].split(',')]  
+    folds = [int(i) for i in config["fold"].split(',')]
     for fold in folds:
         run(fold, df, transforms_train, transforms_val, mel_idx)
 
 
 if __name__ == '__main__':
-
+    print (f'config :{config}')
     os.makedirs(config["model_dir"], exist_ok=True)  
     os.makedirs(config["log_dir"], exist_ok=True)    
     os.environ['CUDA_VISIBLE_DEVICES'] = config["CUDA_VISIBLE_DEVICES"]

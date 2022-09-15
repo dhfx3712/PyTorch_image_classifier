@@ -1,6 +1,6 @@
 torch==1.5.0
 albumentations==0.4.6
-resnest==0.0.6b20200823
+resnest==0.0.6b20200823  #不好用，改torchvision.models或者timm
 geffnet==0.9.8
 numpy==1.18.1
 pandas==0.24.2
@@ -11,4 +11,4 @@ tqdm==4.31.1
 Pillow==7.2.0
 scikit_learn==0.23.2
 kaggle==1.5.6
--e git+https://github.com/ildoonet/pytorch-gradual-warmup-lr.git#egg=pytorch-gradual-warmup-lr
+-e git+https://github.com/ildoonet/pytorch-gradual-warmup-lr.git#egg=pytorch-gradual-warmup-lr #pytorch-gradual-warmup-lr安装

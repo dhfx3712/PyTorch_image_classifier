@@ -2,7 +2,7 @@
 data_dir : "./data/"
 data_folder : "./data/"
 image_size : 512
-enet_type : "resnest101"  # tf_efficientnet_b4_ns/resnest101/seresnext101
+enet_type : "resnest50"  # tf_efficientnet_b4_ns/resnest101/seresnext101
 metric_strategy : False
 batch_size : 8
 num_workers : 4
