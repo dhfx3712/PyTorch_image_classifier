@@ -1,4 +1,4 @@
-
+import os
 import torch
 import numpy as np
 import torch.nn as nn
@@ -97,6 +97,7 @@ class Loss(object):
         
         else:
             outputs = model(images)
+            # print (f'outputs : {outputs}')
             loss = self.criterion(outputs, targets)
         
         return loss

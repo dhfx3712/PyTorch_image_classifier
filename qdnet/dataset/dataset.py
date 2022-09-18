@@ -45,17 +45,21 @@ class QDDataset(Dataset):
 def get_df(data_dir, auc_index):
 
     # train data
-    df_train = pd.read_csv(os.path.join(data_dir, 'train.csv'))
-    df_train['filepath'] = df_train['filepath']
+    df_train = pd.read_csv(os.path.join(data_dir, 'train.txt'),sep=',',names=['filepath','target'])
+    df_train['filepath'] = df_train['filepath'].apply(lambda x:os.path.join(data_dir,x))
 
     # test data
-    df_test = pd.read_csv(os.path.join(data_dir, 'test.csv'))
-    df_test['filepath'] = df_test['filepath']
+    df_test = pd.read_csv(os.path.join(data_dir, 'test.txt'),sep=',',names=['filepath','target'])
+    df_test['filepath'] = df_test['filepath'].apply(lambda x:os.path.join(data_dir,x))
 
     # class mapping
-    label2idx = {d: idx for idx, d in enumerate(sorted(df_train.target.unique()))}
+    # label2idx = {d: idx for idx, d in enumerate(sorted(df_train.target.unique()))}
+    label2idx = {d: idx for idx, d in enumerate(sorted(['liudehua', 'zhoudongyu', 'yuwenle', 'liangjiahui', 'pengyuyan', 'liuyifei', 'fanbingbing',
+     'zhangziyi', 'jiangwen', 'zhoujielun']))}
     df_train['target'] = df_train['target'].map(label2idx)
+    df_test['target'] = df_test['target'].map(label2idx)
     label_idx = label2idx[auc_index]
+    print (f'df_train : {len(df_train)} ,{df_train.head()},"\n",df_test : {len(df_test)},{df_test.head()}')
 
     return df_train, df_test, label_idx
 

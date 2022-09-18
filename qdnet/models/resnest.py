@@ -24,10 +24,25 @@ class Resnest(nn.Module):
     '''
     def __init__(self, enet_type, out_dim, drop_nums=1, pretrained=False, metric_strategy=False):
         super(Resnest, self).__init__()
-        if enet_type in ["resnest50", "resnest101", "resnest200", "resnest269"]:
+        if enet_type in ["resnest18","resnest50", "resnest101", "resnest200", "resnest269"]:
             # self.enet = locals()[enet_type](pretrained=pretrained)
             # self.enet = eval(enet_type)(pretrained=pretrained)
-            self.enet = models.resnet18(pretrained=True)
+            print (f'enet_type : {enet_type}')
+            # model_dict = {"resnest18": models.resnet18(pretrained=True)}
+            # model_dict = {"resnest18": models.resnet18(pretrained=True),\
+            #               "resnest50": models.resnet50(pretrained=True),\
+            #               "resnest101": models.resnet101(pretrained=True),\
+            #               "resnest200": models.resnet200(pretrained=True),\
+            #                "resnest269": models.resnet269(pretrained=True)}
+            model_dict = {"resnest18": models.resnet18(),\
+                          "resnest50": models.resnet50(),\
+                          "resnest101": models.resnet101()}
+            # self.enet = models.resnet18(pretrained=True)
+            self.enet = model_dict[enet_type]
+            #判断是否pretrain,以及加载路径
+            if pretrained:
+                self.enet.load_state_dict(torch.load('./resnet18.pth'))
+
         self.dropouts = nn.ModuleList([ nn.Dropout(0.5) for _ in range(drop_nums) ])
         in_ch = self.enet.fc.in_features
         self.fc = nn.Linear(in_ch, 512)

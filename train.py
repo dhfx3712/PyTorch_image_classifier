@@ -52,7 +52,7 @@ def train_epoch(model, loader, optimizer):
     train_loss = []
     bar = tqdm(loader)
     for (data, target) in bar:
-
+        # print(f'target : {target}')
         optimizer.zero_grad()
         
         data, target = data.to(device), target.to(device)
@@ -88,6 +88,7 @@ def val_epoch(model, loader, mel_idx, get_output=False):
     TARGETS = []
     with torch.no_grad():
         for (data, target) in tqdm(loader):
+
             data, target = data.to(device), target.to(device)
             logits = torch.zeros((data.shape[0], int(config["out_dim"]))).to(device)
             # probs = torch.zeros((data.shape[0], int(config["out_dim"]))).to(device)
@@ -113,10 +114,10 @@ def val_epoch(model, loader, mel_idx, get_output=False):
         return val_loss, acc, auc
 
 
-def run(fold, df, transforms_train, transforms_val, mel_idx):
+def run(df_train, df_valid, transforms_train, transforms_val, mel_idx):
 
-    df_train = df[df['fold'] != fold]
-    df_valid = df[df['fold'] == fold]
+    # df_train = df[df['fold'] != fold]
+    # df_valid = df[df['fold'] == fold]
 
     dataset_train = QDDataset(df_train, 'train', transform=transforms_train)
     dataset_valid = QDDataset(df_valid, 'valid', transform=transforms_val)
@@ -135,8 +136,8 @@ def run(fold, df, transforms_train, transforms_val, mel_idx):
     model = model.to(device)
 
     auc_max = 0.  
-    model_file  = os.path.join(config["model_dir"], f'best_fold{fold}.pth')
-    model_file3 = os.path.join(config["model_dir"], f'final_fold{fold}.pth')
+    model_file  = os.path.join(config["model_dir"], f'best_fold.pth')
+    model_file3 = os.path.join(config["model_dir"], f'final_fold.pth')
 
     optimizer = optim.Adam(model.parameters(), lr=float(config["init_lr"]))
     # if config["use_amp"]:
@@ -147,15 +148,15 @@ def run(fold, df, transforms_train, transforms_val, mel_idx):
     scheduler_cosine = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, int(config["n_epochs"]) - 1) 
     scheduler_warmup = GradualWarmupSchedulerV2(optimizer, multiplier=10, total_epoch=1, after_scheduler=scheduler_cosine)
     
-    print(len(dataset_train), len(dataset_valid))
+    print(f'train : {len(dataset_train)}, val : {len(dataset_valid)}')
 
     for epoch in range(1, int(config["n_epochs"]) + 1): 
-        print(time.ctime(), f'Fold {fold}, Epoch {epoch}')
+        print(time.ctime(), f' Epoch {epoch}')
 
         train_loss = train_epoch(model, train_loader, optimizer)
         val_loss, acc, auc = val_epoch(model, valid_loader, mel_idx)
 
-        content = time.ctime() + ' ' + f'Fold {fold}, Epoch {epoch}, lr: {optimizer.param_groups[0]["lr"]:.7f}, train loss: {train_loss:.5f}, valid loss: {(val_loss):.5f}, acc: {(acc):.4f}, auc: {(auc):.6f}.'
+        content = time.ctime() + ' ' + f' Epoch {epoch}, lr: {optimizer.param_groups[0]["lr"]:.7f}, train loss: {train_loss:.5f}, valid loss: {(val_loss):.5f}, acc: {(acc):.4f}, auc: {(auc):.6f}.'
         print(content)  
         with open(os.path.join(config["log_dir"], f'log.txt'), 'a') as appender:
             appender.write(content + '\n')
@@ -173,14 +174,14 @@ def run(fold, df, transforms_train, transforms_val, mel_idx):
 
 def main():
 
-    df, df_test, mel_idx = get_df( config["data_dir"], config["auc_index"]  )
-    print (df,'\n',df_test,'\n',mel_idx)
+    df_train, df_test, mel_idx = get_df( config["data_dir"], config["auc_index"]  )
+    # print (df_train,'\n',df_test,'\n',mel_idx)
 
     transforms_train, transforms_val = get_transforms(config["image_size"])  
 
-    folds = [int(i) for i in config["fold"].split(',')]
-    for fold in folds:
-        run(fold, df, transforms_train, transforms_val, mel_idx)
+    # folds = [int(i) for i in config["fold"].split(',')]
+    # for fold in folds:
+    run(df_train, df_test, transforms_train, transforms_val, mel_idx)
 
 
 if __name__ == '__main__':
